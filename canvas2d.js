@@ -8,19 +8,28 @@ function start() {
 
     var ctxIndex = 0;               
 
-    var drawer = draw(ctxs[ctxIndex], arrow, target);
+    var drawer = draw(ctxs[ctxIndex], arrow, target);       // start with first canvas as back buffer
+
+    var totalTime = 0;
+    var totalSamples = 0;
 
     setInterval(() => {
 
-        //var start = Date.now();
+        var start = Date.now();
 
-        if(drawer.next().done) {
+        if(drawer.next().done) {                            // draw until completed
 
-            ctxIndex = (ctxIndex + 1) % ctxs.length;
-            drawer = draw(ctxs[ctxIndex], arrow, target);
+            ctxIndex = (ctxIndex + 1) % ctxs.length;        // move to the next canvas
+            drawer = draw(ctxs[ctxIndex], arrow, target);   // set the new canvas as the back buffer
         }
 
-        //console.log(Date.now() - start);
+        totalTime += (Date.now() - start);
+        totalSamples++;
+
+        if(totalSamples > 0 && totalSamples % 100 == 0)
+        {
+            console.log(`${totalSamples} draw calls made. Average rendering time per part so far: ${totalTime / totalSamples} ms.`);
+        }
 
     }, 25);
 }
@@ -34,7 +43,7 @@ function* draw(ctx, img, target)
     var row = 0;
     var col = 0;
 
-    for(var i = 0; i < 20000 ; i++) {
+    for(var i = 0; i < 20000 ; i++) {       // 20000 images will be drawn
 
         ctx.drawImage(img, col, row);
 
@@ -46,11 +55,11 @@ function* draw(ctx, img, target)
             row = row + 6;
         }
 
-        if (i > 0 && i % 500 == 0) {
+        if (i > 0 && i % 1000 == 0) {       // 1000 images per iteration
 
             yield;
         }
     }
 
-    target.src = ctx.canvas.toDataURL();
+    target.src = ctx.canvas.toDataURL();    // Set the current canvas as the front buffer
 }   
